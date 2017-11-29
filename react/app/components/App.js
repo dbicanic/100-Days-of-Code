@@ -1,21 +1,27 @@
 var React = require('react');
-var ReactDOM = require('react-dom');
 
-class Button extends React.Component {
-  state = { counter: 1 };
-  
-  handleClick = () => {
-    this.setState((prevState) => ({
-      counter: prevState.counter + 1 
-    }));
-  };
-  
+class AwesomeComponent extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {likesCount : 0};
+    this.onLike = this.onLike.bind(this);
+  }
+
+  onLike () {
+    let newLikesCount = this.state.likesCount + 1;
+    this.setState({likesCount: newLikesCount});
+  }
+
   render() {
     return (
-      <button onClick={this.handleClick}>
-        {this.state.counter}
-      </button>
+      <div>
+        Likes : <span>{this.state.likesCount}</span>
+        <div><button onClick={this.onLike}>Like Me</button></div>
+      </div>
     );
   }
+
 }
-ReactDOM.render(<Button />, mountNode);
+
+module.exports = AwesomeComponent;
