@@ -34,14 +34,62 @@ class Game extends React.Component {
     remainingSeconds: this.props.initialSeconds,
     selectedIds: [],
   };
+
   challengeNumbers = Array.from({
     length: this.props.challengeSize,
   }).map(() =>
     randomNumberBetween(...this.props.challengeRange)
   );
+
   target = _.sum(
     _.sampleSize(this.challengeNumbers, this.props.answerSize)
   );
+
+  startGame = () => {
+    this.setState({ gameStatus: 'playing' }, () => {
+      this.intervalId = setInterval(() => {
+        this.setState((prevState) => {
+          const newRemainingSeconds = prevState.remainingSeconds - 1;
+          if (newRemainingSeconds === 0) {
+            clearInterval(this.intervalId);
+            return { gameStatus: 'lost', remainingSeconds: 0 };
+          }
+          return { remainingSeconds: newRemainingSeconds };
+        });
+      }, 1000);
+    });
+  };
+
+  selectNumber = (numberIndex) => {
+    if (this.state.gameStatus !== 'playing') {
+      return;
+    }
+    this.setState(
+      (prevState) => ({
+        selectedIds: [...prevState.selectedIds, numberIndex],
+        gameStatus: this.calcGameStatus([
+          ...prevState.selectedIds,
+          numberIndex,
+        ]),
+      }),
+      () => {
+        if (this.state.gameStatus !== 'playing') {
+          clearInterval(this.intervalId);
+        }
+      }
+    );
+  };
+
+  calcGameStatus = (selectedIds) => {
+    const sumSelected = selectedIds.reduce(
+      (acc, curr) => acc + this.challengeNumbers[curr],
+      0
+    );
+    if (sumSelected < this.target) {
+      return 'playing';
+    }
+    return sumSelected === this.target ? 'won' : 'lost';
+  };
 
   isNumberAvailable = numberIndex =>
     this.state.selectedIds.indexOf(numberIndex) === -1;
