@@ -15,12 +15,18 @@ const randomNumberBetween = (min, max) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 class Number extends React.Component {
+  handleClick = () => {
+    if (this.props.clickable) {
+      this.props.onClick(this.props.id);
+    }
+  };
+
   render() {
     return (
       <div
         className="number"
         style={{ opacity: this.props.clickable ? 1 : 0.3 }}
-        onClick={() => console.log(this.props.id)}
+        onClick={this.handleClick}
       >
         {this.props.value}
       </div>
@@ -45,6 +51,13 @@ class Game extends React.Component {
     _.sampleSize(this.challengeNumbers, this.props.answerSize)
   );
 
+  componentWillUnmount() {
+    clearInterval(this.intervalId);
+  }
+
+  isNumberAvailable = numberIndex =>
+    this.state.selectedIds.indexOf(numberIndex) === -1;
+
   startGame = () => {
     this.setState({ gameStatus: 'playing' }, () => {
       this.intervalId = setInterval(() => {
@@ -60,18 +73,19 @@ class Game extends React.Component {
     });
   };
 
-  selectNumber = (numberIndex) => {
-    if (this.state.gameStatus !== 'playing') {
-      return;
-    }
+  selectNumber = numberIndex => {
     this.setState(
-      (prevState) => ({
-        selectedIds: [...prevState.selectedIds, numberIndex],
-        gameStatus: this.calcGameStatus([
-          ...prevState.selectedIds,
-          numberIndex,
-        ]),
-      }),
+      prevState => {
+        if (prevState.gameStatus !== 'playing') {
+          return null;
+        }
+        const newSelectedIds =
+          [ ...prevState.selectedIds, numberIndex ];
+        return {
+          selectedIds: newSelectedIds,
+          gameStatus: this.calcGameStatus(newSelectedIds),
+        };
+      },
       () => {
         if (this.state.gameStatus !== 'playing') {
           clearInterval(this.intervalId);
@@ -80,19 +94,16 @@ class Game extends React.Component {
     );
   };
 
-  calcGameStatus = (selectedIds) => {
-    const sumSelected = selectedIds.reduce(
+  calcGameStatus = newSelectedIds => {
+    const sumSelected = newSelectedIds.reduce(
       (acc, curr) => acc + this.challengeNumbers[curr],
       0
     );
-    if (sumSelected < this.target) {
+    if (newSelectedIds.length !== this.props.answerSize) {
       return 'playing';
     }
     return sumSelected === this.target ? 'won' : 'lost';
   };
-
-  isNumberAvailable = numberIndex =>
-    this.state.selectedIds.indexOf(numberIndex) === -1;
 
   render() {
     const { gameStatus, remainingSeconds } = this.state;
@@ -115,19 +126,22 @@ class Game extends React.Component {
               id={index}
               value={gameStatus === 'new' ? '?' : value}
               clickable={this.isNumberAvailable(index)}
+              onClick={this.selectNumber}
             />
           )}
         </div>
         <div className="footer">
           {gameStatus === 'new' &&
-            <button>Start Game</button>}
+            <button onClick={this.startGame}>Start</button>}
 
           {gameStatus === 'playing' &&
             <div className="timer-value">{remainingSeconds}</div>
           }
 
           {['won', 'lost'].includes(gameStatus) &&
-            <button>Play Again</button>
+            <button onClick={this.props.onPlayAgain}>
+              Play Again
+            </button>
           }
         </div>
       </div>
@@ -135,18 +149,29 @@ class Game extends React.Component {
   }
 }
 
-class Page extends React.Component {
+class App extends React.Component {
+  state = {
+    gameID: 1,
+  };
+
+  resetGame = () =>
+    this.setState((prevState) => ({
+      gameID: prevState.gameID + 1,
+    }));
 
   render() {
     return (
       <Game
+        key={this.state.gameID}
+        autoPlay={this.state.gameID > 1}
         challengeRange={[2, 9]}
         challengeSize={6}
         answerSize={4}
         initialSeconds={15}
+        onPlayAgain={this.resetGame}
       />
-    )
+    );
   }
 }
 
-export default Page;
+export default App;
