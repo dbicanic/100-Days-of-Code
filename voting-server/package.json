@@ -12,7 +12,7 @@
     "mocha": "^4.1.0"
   },
   "scripts": {
-  	"test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js  --recursive",
+    "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js  --recursive",
     "test:watch": "npm run test -- --watch"
   },
   "babel": {
@@ -21,6 +21,7 @@
     ]
   },
   "dependencies": {
-    "immutable": "^3.8.2"
+    "immutable": "^3.8.2",
+    "redux": "^3.7.2"
   }
 }
