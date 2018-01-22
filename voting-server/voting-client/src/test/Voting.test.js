@@ -24,5 +24,6 @@ describe('voting', () => {
 
 		const buttons = component.find('button');
 		buttons.first().simulate('click');
+		expect(voteWith).toEqual("Trainspotting");
 	});
 });
