@@ -54,12 +54,10 @@ describe('voting', () => {
 
 		const buttons=component.find('button');
 		expect(buttons.length).toBe(0);
+		expect(component.text()).toContain('Trainspotting');
 
 		const winner=component.ref('winner');
-		console.log(winner);
 		expect(winner).toBeTruthy();
-		expect(winner.text()).toContain('Trainspotting');
 
-		// const winner=component.find()
 	});
 });
